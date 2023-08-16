@@ -34,18 +34,25 @@ describe("Tests for sql.js ", function(){
 
   test('sqlForPartialUpdate: empty dataToUpdate throws an error', function(){
 
-    //TODO: why do we need an anonymous function here?
     expect(()=>(sqlForPartialUpdate({},{firstName:"Joel"})))
       .toThrow(new BadRequestError("No data"));
   })
 
+  //TODO: necessary? requires jsToSql anyway
+  test(`sqlForPartialUpdate: empty jsToSql uses dataToUpdate keys to return
+  expected object`, function() {
+    const dataToUpdate = {
+      firstName:"Joel",
+      lastName:"Burton"
+    }
+
+    const resultObj = sqlForPartialUpdate(dataToUpdate, {});
+
+    expect(resultObj).toEqual(
+      {
+        setCols: '"firstName"=$1, "lastName"=$2',
+        values: ["Joel", "Burton"],
+      })
+  })
+
 });
-
-
-//empty dataToUpdate throws an error
-  //call function with empty dataToUpdate
-  //expect toThrow BadRequestError "No data"
-//success: jsToSql is missing should still use keys from dataToUpdate
-  //create dataToUpdate obj with good data
-  //call function with only dataToUpdate arg
-  //expect result
