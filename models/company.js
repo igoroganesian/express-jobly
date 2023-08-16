@@ -38,12 +38,12 @@ class Company {
                     description,
                     num_employees AS "numEmployees",
                     logo_url AS "logoUrl"`, [
-          handle,
-          name,
-          description,
-          numEmployees,
-          logoUrl,
-        ],
+      handle,
+      name,
+      description,
+      numEmployees,
+      logoUrl,
+    ],
     );
     const company = result.rows[0];
 
@@ -67,7 +67,62 @@ class Company {
     return companiesRes.rows;
   }
 
-  //"maxEmployees must be greater than minEmployees"
+
+  
+  /** Accepts a searchQuery including any of the following keys:
+   * {minEmployees, maxEmployees, name}
+   *
+   * Returns a list of companies that match the search criteria:
+   *  [{ handle, name, description, numEmployees, logoUrl }, ...]*/
+
+  static async findByQuery(searchQueries) {
+
+    const keys = Object.keys(searchQueries);
+
+    //validate min > max
+    if (keys.minEmployees > keys.maxEmployees){
+      throw new BadRequestError("maxEmployees must be greater than minEmployees")
+    }
+
+    const values = [];
+    const whereClauses = [];
+
+    //generate SQL clause for each type of filter
+    for (const i = 0; i < keys; i++) {
+      if (keys[i] === "minEmployees") {
+        whereClauses.push(`num_employees > $${i + 1}`);
+      } else if (keys[i] === "maxEmployees") {
+        whereClauses.push(`num_employees < $${i + 1}`);
+      } else {
+        whereClauses.push(`name ILIKE $${i + 1}`);
+      }
+
+      //add value sent by the user
+      values.push(keys[i])
+
+      //add AND if this is not the last filter
+      if (i !== (keys.length - 1)){
+        whereClauses.push(" AND ")
+      }
+    }
+
+    const fullWhereStatement = whereClauses.join("");
+
+    const companiesRes = await db.query(`
+        SELECT handle,
+                name,
+                description,
+                num_employees AS "numEmployees",
+                logo_url      AS "logoUrl"
+        FROM companies
+        WHERE ${fullWhereStatement}
+        ORDER BY name`,
+        [...searchTerms]);
+
+
+    return companiesRes.rows;
+    }
+
 
   /** Given a company handle, return data about company.
    *
@@ -108,11 +163,11 @@ class Company {
 
   static async update(handle, data) {
     const { setCols, values } = sqlForPartialUpdate(
-        data,
-        {
-          numEmployees: "num_employees",
-          logoUrl: "logo_url",
-        });
+      data,
+      {
+        numEmployees: "num_employees",
+        logoUrl: "logo_url",
+      });
     const handleVarIdx = "$" + (values.length + 1);
 
     const querySql = `
@@ -155,25 +210,4 @@ module.exports = Company;
 
 
 
-// const companiesRes = await db.query(`
-//         SELECT handle,
-//                name,
-//                description,
-//                num_employees AS "numEmployees",
-//                logo_url      AS "logoUrl"
-//         FROM companies
-//         WHERE num_employees > minEmployees
-//         AND num_employees < maxEmployees,
-//         AND name ILIKE %nameLike%,
-//         ORDER BY name`);
 
-        //nameLike
-          //case-insensitive
-
-        //minEmployees
-        //maxEmployees
-          //if minEmployees > maxEmployees throw 400 w/ error message
-
-        //filter in model
-
-        //
