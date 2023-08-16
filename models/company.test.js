@@ -31,7 +31,7 @@ describe("create", function () {
     expect(company).toEqual(newCompany);
 
     const result = await db.query(
-          `SELECT handle, name, description, num_employees, logo_url
+      `SELECT handle, name, description, num_employees, logo_url
            FROM companies
            WHERE handle = 'new'`);
     expect(result.rows).toEqual([
@@ -85,7 +85,121 @@ describe("findAll", function () {
       },
     ]);
   });
+
+  test("works: minEmployees filter", async function () {
+    const searchQueries = { minEmployees: 2 };
+    let companies = await Company.findAll(searchQueries);
+
+    expect(companies).toEqual([
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      },
+      {
+        handle: "c3",
+        name: "C3",
+        description: "Desc3",
+        numEmployees: 3,
+        logoUrl: "http://c3.img",
+      },
+    ]);
+  });
+
+  test("works: maxEmployees filter", async function () {
+    const searchQueries = { maxEmployees: 2 };
+    let companies = await Company.findAll(searchQueries);
+
+    expect(companies).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      },
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      }
+    ]);
+  });
+
+  test("works: minEmployees & maxEmployees filter", async function () {
+    const searchQueries = { minEmployees: 2, maxEmployees: 2 };
+    let companies = await Company.findAll(searchQueries);
+
+    expect(companies).toEqual([
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      }
+    ]);
+  });
+
+  //TODO: >:(
+
+  test("bad request with minEmployees > maxEmployees", async function () {
+    const searchQueries = { minEmployees: 5, maxEmployees: 2 };
+    const companiesCheck = async function() {await Company.findAll(searchQueries)};
+    expect(companiesCheck).toThrow(new BadRequestError("message?"));
+  });
+
+  test("works: nameLike filter", async function () {
+    const searchQueries = { nameLike: "c3" };
+    let companies = await Company.findAll(searchQueries);
+
+    expect(companies).toEqual([
+      {
+        handle: "c3",
+        name: "C3",
+        description: "Desc3",
+        numEmployees: 3,
+        logoUrl: "http://c3.img",
+      }
+    ]);
+  });
+
+  test("works: multiple filters", async function () {
+    await Company.create(
+      {
+        handle: "fuk coffee",
+        name: "FUK COFFEE",
+        numEmployees: 2,
+        description: "Desc1",
+        logoUrl: "http://c1.img",
+      });
+
+    const searchQueries = {
+      nameLike: "off",
+      minEmployees: 2,
+      maxEmployees: 2
+    };
+
+    let companies = await Company.findAll(searchQueries);
+
+    expect(companies).toEqual([
+      {
+        handle: "fuk coffee",
+        name: "FUK COFFEE",
+        numEmployees: 2,
+        description: "Desc1",
+        logoUrl: "http://c1.img",
+      }
+    ]);
+  });
+
+
 });
+
 
 /************************************** get */
 
@@ -129,7 +243,7 @@ describe("update", function () {
     });
 
     const result = await db.query(
-          `SELECT handle, name, description, num_employees, logo_url
+      `SELECT handle, name, description, num_employees, logo_url
            FROM companies
            WHERE handle = 'c1'`);
     expect(result.rows).toEqual([{
@@ -156,7 +270,7 @@ describe("update", function () {
     });
 
     const result = await db.query(
-          `SELECT handle, name, description, num_employees, logo_url
+      `SELECT handle, name, description, num_employees, logo_url
            FROM companies
            WHERE handle = 'c1'`);
     expect(result.rows).toEqual([{
@@ -193,7 +307,7 @@ describe("remove", function () {
   test("works", async function () {
     await Company.remove("c1");
     const res = await db.query(
-        "SELECT handle FROM companies WHERE handle='c1'");
+      "SELECT handle FROM companies WHERE handle='c1'");
     expect(res.rows.length).toEqual(0);
   });
 

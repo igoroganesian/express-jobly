@@ -55,7 +55,7 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll() {
+  static async findAll(searchQueries) {
     const companiesRes = await db.query(`
         SELECT handle,
                name,
@@ -66,6 +66,8 @@ class Company {
         ORDER BY name`);
     return companiesRes.rows;
   }
+
+  //"maxEmployees must be greater than minEmployees"
 
   /** Given a company handle, return data about company.
    *
@@ -150,3 +152,28 @@ class Company {
 
 
 module.exports = Company;
+
+
+
+// const companiesRes = await db.query(`
+//         SELECT handle,
+//                name,
+//                description,
+//                num_employees AS "numEmployees",
+//                logo_url      AS "logoUrl"
+//         FROM companies
+//         WHERE num_employees > minEmployees
+//         AND num_employees < maxEmployees,
+//         AND name ILIKE %nameLike%,
+//         ORDER BY name`);
+
+        //nameLike
+          //case-insensitive
+
+        //minEmployees
+        //maxEmployees
+          //if minEmployees > maxEmployees throw 400 w/ error message
+
+        //filter in model
+
+        //
