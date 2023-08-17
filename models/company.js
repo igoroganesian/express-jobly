@@ -67,8 +67,6 @@ class Company {
     return companiesRes.rows;
   }
 
-
-  
   /** Accepts a searchQuery including any of the following keys:
    * {minEmployees, maxEmployees, name}
    *
@@ -77,36 +75,53 @@ class Company {
 
   static async findByQuery(searchQueries) {
 
-    const keys = Object.keys(searchQueries);
+    const queryKeys = Object.keys(searchQueries);
+    const queryValues = Object.values(searchQueries);
+    console.log(`keys: ${queryKeys}`);
+    console.log(`searchQueries.minEmployees: ${searchQueries.minEmployees > searchQueries.maxEmployees}`);
 
     //validate min > max
-    if (keys.minEmployees > keys.maxEmployees){
-      throw new BadRequestError("maxEmployees must be greater than minEmployees")
+    if (searchQueries.minEmployees > searchQueries.maxEmployees){
+      console.log(`MIN: ${searchQueries.minEmployees}, MAX: ${searchQueries.maxEmployees}`);
+      throw new BadRequestError("maxEmployees must be greater than minEmployees");
     }
 
     const values = [];
     const whereClauses = [];
 
+    // console.log(`searchQueries: ${searchQueries}`);
+
     //generate SQL clause for each type of filter
-    for (const i = 0; i < keys; i++) {
-      if (keys[i] === "minEmployees") {
-        whereClauses.push(`num_employees > $${i + 1}`);
-      } else if (keys[i] === "maxEmployees") {
-        whereClauses.push(`num_employees < $${i + 1}`);
+    for (let i = 0; i < queryKeys.length; i++) {
+      if (queryKeys[i] === "minEmployees") {
+        whereClauses.push(`num_employees >= $${i + 1}`);
+        values.push(queryValues[i]);
+      } else if (queryKeys[i] === "maxEmployees") {
+        whereClauses.push(`num_employees <= $${i + 1}`);
+        values.push(queryValues[i]);
       } else {
         whereClauses.push(`name ILIKE $${i + 1}`);
+        values.push(`%${queryValues[i]}%`);
       }
+      // console.log(`reached line 104`);
 
-      //add value sent by the user
-      values.push(keys[i])
+      // console.log(`reached line 108 (pushed to ${values})`);
 
       //add AND if this is not the last filter
-      if (i !== (keys.length - 1)){
-        whereClauses.push(" AND ")
+      if (i !== (queryKeys.length - 1)){
+        // console.log(`entered keys.length check`);
+        whereClauses.push(" AND ");
+        // console.log(`pushed AND to whereClauses`);
       }
+      console.log(`passed push to WHERE`);
     }
 
+    console.log(`values: ${values}, whereClauses: ${whereClauses}`);
+    console.log(`values spread: ${[...values]}`);
+
     const fullWhereStatement = whereClauses.join("");
+
+    console.log(`fullWhereStatement: ${fullWhereStatement}`);
 
     const companiesRes = await db.query(`
         SELECT handle,
@@ -117,8 +132,20 @@ class Company {
         FROM companies
         WHERE ${fullWhereStatement}
         ORDER BY name`,
-        [...searchTerms]);
+        [...values]
+        );
 
+    const testStatement = `
+    SELECT handle,
+            name,
+            description,
+            num_employees AS "numEmployees",
+            logo_url      AS "logoUrl"
+    FROM companies
+    WHERE ${fullWhereStatement}
+    ORDER BY name`;
+
+    console.log(`testStatement: ${testStatement} valuesSpread: ${[...values]}`);
 
     return companiesRes.rows;
     }
