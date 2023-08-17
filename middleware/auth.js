@@ -40,8 +40,18 @@ function ensureLoggedIn(req, res, next) {
   throw new UnauthorizedError();
 }
 
+/** Middleware to use when user must be tagged as admin
+ *
+ * if not, raises unauthorized
+ */
+
+function ensureIsAdmin(req,res,next){
+  if (res.locals.user?.isAdmin) return next();
+  throw new UnauthorizedError();
+}
 
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
+  ensureIsAdmin,
 };

@@ -86,10 +86,9 @@ describe("findAll", function () {
     ]);
   });
 
-  //TODO: findByQuery tests
   test("works: minEmployees filter", async function () {
     const searchQueries = { minEmployees: 2 };
-    let companies = await Company.findByQuery(searchQueries);
+    let companies = await Company.findAll(searchQueries);
 
     expect(companies).toEqual([
       {
@@ -111,7 +110,7 @@ describe("findAll", function () {
 
   test("works: maxEmployees filter", async function () {
     const searchQueries = { maxEmployees: 2 };
-    let companies = await Company.findByQuery(searchQueries);
+    let companies = await Company.findAll(searchQueries);
 
     expect(companies).toEqual([
       {
@@ -133,7 +132,7 @@ describe("findAll", function () {
 
   test("works: minEmployees & maxEmployees filter", async function () {
     const searchQueries = { minEmployees: 2, maxEmployees: 2 };
-    let companies = await Company.findByQuery(searchQueries);
+    let companies = await Company.findAll(searchQueries);
 
     expect(companies).toEqual([
       {
@@ -148,7 +147,7 @@ describe("findAll", function () {
 
   test("bad request with minEmployees > maxEmployees", async function () {
     const searchQueries = { minEmployees: 5, maxEmployees: 2 };
-    expect(async () => { await Company.findByQuery(searchQueries); })
+    expect(async () => { await Company.findAll(searchQueries); })
       .rejects
       .toThrow(new BadRequestError(
         "maxEmployees must be greater than minEmployees"
@@ -157,7 +156,7 @@ describe("findAll", function () {
 
   test("works: nameLike filter", async function () {
     const searchQueries = { nameLike: "3" };
-    let companies = await Company.findByQuery(searchQueries);
+    let companies = await Company.findAll(searchQueries);
 
     expect(companies).toEqual([
       {
@@ -186,7 +185,7 @@ describe("findAll", function () {
       maxEmployees: 2
     };
 
-    let companies = await Company.findByQuery(searchQueries);
+    let companies = await Company.findAll(searchQueries);
 
     expect(companies).toEqual([
       {

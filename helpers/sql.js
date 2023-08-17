@@ -74,7 +74,7 @@ function sqlForFindByQuery(searchQueries) {
   const queryValues = Object.values(searchQueries);
 
   const values = [];
-  const whereClauses = [];
+  const whereClauses = ["WHERE "];
 
   //TODO: can check obj keys and adjust by length ie if .min etc.
 

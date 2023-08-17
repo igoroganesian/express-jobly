@@ -6,7 +6,7 @@ const jsonschema = require("jsonschema");
 const express = require("express");
 
 const { BadRequestError } = require("../expressError");
-const { ensureLoggedIn } = require("../middleware/auth");
+const { ensureLoggedIn, ensureIsAdmin } = require("../middleware/auth");
 const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
@@ -67,15 +67,8 @@ router.get("/", async function (req, res, next) {
     throw new BadRequestError(errs);
   }
 
-  //TODO: combine?
-
-  if (Object.keys(req.query).length > 0){
-    const companies = await Company.findByQuery(searchQueries);
+    const companies = await Company.findAll(searchQueries);
     return res.json({ companies });
-  } else {
-    const companies = await Company.findAll();
-    return res.json({ companies });
-  }
 });
 
 /** GET /[handle]  =>  { company }

@@ -85,7 +85,7 @@ describe("Tests for sql.js (sqlForFindByQuery)", function () {
     //expect good output
     expect(resultObj).toEqual(
       {
-        fullWhereStatement: "num_employees >= $1 AND num_employees <= $2",
+        fullWhereStatement: "WHERE num_employees >= $1 AND num_employees <= $2",
         values: [2, 5]
       });
   });
@@ -109,7 +109,7 @@ describe("Tests for sql.js (sqlForFindByQuery)", function () {
     expect(resultObj).toEqual(
       {
         fullWhereStatement:
-        `name ILIKE $1 AND num_employees >= $2 AND num_employees <= $3`,
+        `WHERE name ILIKE $1 AND num_employees >= $2 AND num_employees <= $3`,
         values: [ '%off%', 2, 5 ]
       });
   });

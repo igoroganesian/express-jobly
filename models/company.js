@@ -57,17 +57,17 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll() {
-    const companiesRes = await db.query(`
-        SELECT handle,
-               name,
-               description,
-               num_employees AS "numEmployees",
-               logo_url      AS "logoUrl"
-        FROM companies
-        ORDER BY name`);
-    return companiesRes.rows;
-  }
+  // static async findAll() {
+  //   const companiesRes = await db.query(`
+  //       SELECT handle,
+  //              name,
+  //              description,
+  //              num_employees AS "numEmployees",
+  //              logo_url      AS "logoUrl"
+  //       FROM companies
+  //       ORDER BY name`);
+  //   return companiesRes.rows;
+  // }
 
   /** Accepts a searchQuery including any of the following keys:
    * {minEmployees, maxEmployees, name}
@@ -75,30 +75,41 @@ class Company {
    * Returns a list of companies that match the search criteria:
    *  [{ handle, name, description, numEmployees, logoUrl }, ...]*/
 
-  static async findByQuery(searchQueries) {
+  static async findAll(searchQueries={}) {
 
-    if (searchQueries.minEmployees > searchQueries.maxEmployees){
+    if (searchQueries.minEmployees > searchQueries.maxEmployees) {
       throw new BadRequestError(
         "maxEmployees must be greater than minEmployees"
-        );
+      );
     }
 
-    const { fullWhereStatement, values } = sqlForFindByQuery(searchQueries);
+    let sql =
+      `SELECT handle,
+          name,
+          description,
+          num_employees AS "numEmployees",
+          logo_url      AS "logoUrl"
+      FROM companies
+    `;
 
-    const companiesRes = await db.query(`
-        SELECT handle,
-                name,
-                description,
-                num_employees AS "numEmployees",
-                logo_url      AS "logoUrl"
-        FROM companies
-        WHERE ${fullWhereStatement}
-        ORDER BY name`,
+    let companiesRes;
+
+    if (Object.keys(searchQueries).length > 0) {
+      const { fullWhereStatement, values } = sqlForFindByQuery(searchQueries);
+      sql += fullWhereStatement;
+      sql += `ORDER BY name`;
+      companiesRes = await db.query(
+        sql,
         [...values]
-        );
+      );
+    } else {
+      sql += `ORDER BY name`;
+      companiesRes = await db.query(sql);
+
+    }
 
     return companiesRes.rows;
-    }
+  }
 
 
   /** Given a company handle, return data about company.
