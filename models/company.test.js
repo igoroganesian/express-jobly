@@ -147,8 +147,10 @@ describe("findAll", function () {
 
   test("bad request with minEmployees > maxEmployees", async function () {
     const searchQueries = { minEmployees: 5, maxEmployees: 2 };
-    expect(async () => {await Company.findByQuery(searchQueries)}).rejects.toThrow(new BadRequestError(
-      "maxEmployees must be greater than minEmployees"
+    expect(async () => { await Company.findByQuery(searchQueries); })
+      .rejects
+      .toThrow(new BadRequestError(
+        "maxEmployees must be greater than minEmployees"
       ));
   });
 
@@ -198,7 +200,6 @@ describe("findAll", function () {
 
 
 });
-
 
 /************************************** get */
 

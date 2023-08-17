@@ -43,29 +43,33 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   };
 }
 
-
-
-/**Helper function that allows us to build a WHERE clause for filtering
+/**Helper function that allows us to build WHERE clause(s) for filtering
  * companies.
  *
  * Accepts an object with any or all of the keys below:
- *Input: {
-    minEmployees: (number)
-    maxEmployees: (number)
-    nameLike: (string)
-  }
+ *  Input: {
+      minEmployees: 2,
+      maxEmployees: 5,
+      nameLike: "off"
+    }
  *
- * Returns {
- *    fullWhereStatement: "num_employees >=2 AND num_employees <= 5"
- *    values:[ 2, 5,...]
- * }
+ * Returns:
+ *  {
+ *    fullWhereStatement:
+ *      "name ILIKE $1 AND
+ *       num_employees >= $2 AND
+ *       num_employees <= $3",
+ *    values:[ '%off%', 2, 5 ]
+ *  }
 */
 
-function sqlForFindByQuery(searchQueries){
+function sqlForFindByQuery(searchQueries) {
+  if (searchQueries === undefined) throw new BadRequestError(
+    "No queries provided"
+  );
 
   const queryKeys = Object.keys(searchQueries);
   const queryValues = Object.values(searchQueries);
-
 
   const values = [];
   const whereClauses = [];
@@ -83,17 +87,15 @@ function sqlForFindByQuery(searchQueries){
       values.push(`%${queryValues[i]}%`);
     }
 
-
     //add AND if this is not the last filter
-    if (i !== (queryKeys.length - 1)){
+    if (i !== (queryKeys.length - 1)) {
       whereClauses.push(" AND ");
     }
   }
 
   const fullWhereStatement = whereClauses.join("");
 
-  return { fullWhereStatement, values}
-
+  return { fullWhereStatement, values };
 }
 
 

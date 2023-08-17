@@ -81,7 +81,7 @@ class Company {
       throw new BadRequestError("maxEmployees must be greater than minEmployees");
     }
 
-    const {fullWhereStatement,values} = sqlForFindByQuery(searchQueries);
+    const { fullWhereStatement, values } = sqlForFindByQuery(searchQueries);
 
     const companiesRes = await db.query(`
         SELECT handle,
