@@ -34,7 +34,7 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
 
   // {firstName: 'Aliya', age: 32} => ['"first_name"=$1', '"age"=$2']
   const cols = keys.map((colName, idx) =>
-      `"${jsToSql[colName] || colName}"=$${idx + 1}`,
+    `"${jsToSql[colName] || colName}"=$${idx + 1}`,
   );
 
   return {
@@ -45,5 +45,58 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
 
 
 
-module.exports = { sqlForPartialUpdate };
+/**Helper function that allows us to build a WHERE clause for filtering
+ * companies.
+ *
+ * Accepts an object with any or all of the keys below:
+ *Input: {
+    minEmployees: (number)
+    maxEmployees: (number)
+    nameLike: (string)
+  }
+ *
+ * Returns {
+ *    fullWhereStatement: "num_employees >=2 AND num_employees <= 5"
+ *    values:[ 2, 5,...]
+ * }
+*/
+
+function sqlForFindByQuery(searchQueries){
+
+  const queryKeys = Object.keys(searchQueries);
+  const queryValues = Object.values(searchQueries);
+
+
+  const values = [];
+  const whereClauses = [];
+
+  //generate SQL clause for each type of filter
+  for (let i = 0; i < queryKeys.length; i++) {
+    if (queryKeys[i] === "minEmployees") {
+      whereClauses.push(`num_employees >= $${i + 1}`);
+      values.push(queryValues[i]);
+    } else if (queryKeys[i] === "maxEmployees") {
+      whereClauses.push(`num_employees <= $${i + 1}`);
+      values.push(queryValues[i]);
+    } else {
+      whereClauses.push(`name ILIKE $${i + 1}`);
+      values.push(`%${queryValues[i]}%`);
+    }
+
+
+    //add AND if this is not the last filter
+    if (i !== (queryKeys.length - 1)){
+      whereClauses.push(" AND ");
+    }
+  }
+
+  const fullWhereStatement = whereClauses.join("");
+
+  return { fullWhereStatement, values}
+
+}
+
+
+
+module.exports = { sqlForPartialUpdate, sqlForFindByQuery };
 

@@ -54,7 +54,7 @@ router.get("/", async function (req, res, next) {
 
   const validator = jsonchema.validate(
     req.query,
-    companyFilter,
+    companyFilterSchema,
     {required: true}
   );
 
