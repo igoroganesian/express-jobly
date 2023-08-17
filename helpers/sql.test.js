@@ -68,8 +68,6 @@ describe("Tests for sql.js (sqlForPartialUpdate)", function () {
 // * }
 // */
 
-// function sqlForFindByQuery(searchQueries){
-
 describe("Tests for sql.js (sqlForFindByQuery)", function () {
 
   test(`sqlForFindByQuery should return well structured object with
@@ -91,6 +89,8 @@ describe("Tests for sql.js (sqlForFindByQuery)", function () {
         values: [2, 5]
       });
   });
+
+  //TODO: add WHERE to full...
 
   test(`sqlForFindByQuery should return well structured object with
   correct values (works with all 3 queries)`, function () {

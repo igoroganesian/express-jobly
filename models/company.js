@@ -57,7 +57,7 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll(searchQueries) {
+  static async findAll() {
     const companiesRes = await db.query(`
         SELECT handle,
                name,
@@ -78,7 +78,9 @@ class Company {
   static async findByQuery(searchQueries) {
 
     if (searchQueries.minEmployees > searchQueries.maxEmployees){
-      throw new BadRequestError("maxEmployees must be greater than minEmployees");
+      throw new BadRequestError(
+        "maxEmployees must be greater than minEmployees"
+        );
     }
 
     const { fullWhereStatement, values } = sqlForFindByQuery(searchQueries);

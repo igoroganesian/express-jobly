@@ -67,6 +67,8 @@ router.get("/", async function (req, res, next) {
     throw new BadRequestError(errs);
   }
 
+  //TODO: combine?
+
   if (Object.keys(req.query).length > 0){
     const companies = await Company.findByQuery(searchQueries);
     return res.json({ companies });

@@ -86,6 +86,7 @@ describe("findAll", function () {
     ]);
   });
 
+  //TODO: findByQuery tests
   test("works: minEmployees filter", async function () {
     const searchQueries = { minEmployees: 2 };
     let companies = await Company.findByQuery(searchQueries);
@@ -200,6 +201,8 @@ describe("findAll", function () {
 
 
 });
+
+//TODO: search for no-match; order tests consistently
 
 /************************************** get */
 

@@ -132,6 +132,8 @@ describe("GET /companies", function () {
 
 });
 
+//TODO: test for no matches
+
 /************************************** GET /companies/:handle */
 
 describe("GET /companies/:handle", function () {

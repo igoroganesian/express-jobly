@@ -15,6 +15,7 @@ const { BadRequestError } = require("../expressError");
         firstName: "first_name",
         lastName: "last_name"
       }
+      //TODO: better example of first obj
  *
  * Returns an object containing:
  *    setCols: a string of formatted SQL ready to be fed into the SET command
@@ -63,6 +64,7 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
  *  }
 */
 
+//TODO: naming: more specific to match route, currently only for companies
 function sqlForFindByQuery(searchQueries) {
   if (searchQueries === undefined) throw new BadRequestError(
     "No queries provided"
@@ -73,6 +75,8 @@ function sqlForFindByQuery(searchQueries) {
 
   const values = [];
   const whereClauses = [];
+
+  //TODO: can check obj keys and adjust by length ie if .min etc.
 
   //generate SQL clause for each type of filter
   for (let i = 0; i < queryKeys.length; i++) {
