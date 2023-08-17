@@ -97,15 +97,15 @@ class Company {
     if (Object.keys(searchQueries).length > 0) {
       const { fullWhereStatement, values } = sqlForFindByQuery(searchQueries);
       sql += fullWhereStatement;
-      sql += `ORDER BY name`;
+      //TODO: spacing error?!
+      sql += ` ORDER BY name`;
       companiesRes = await db.query(
         sql,
         [...values]
       );
     } else {
-      sql += `ORDER BY name`;
+      sql += ` ORDER BY name`;
       companiesRes = await db.query(sql);
-
     }
 
     return companiesRes.rows;

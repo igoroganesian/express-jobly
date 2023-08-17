@@ -36,6 +36,7 @@ function authenticateJWT(req, res, next) {
  */
 
 function ensureLoggedIn(req, res, next) {
+  console.log(`CALLED LOGGED IN`);
   if (res.locals.user?.username) return next();
   throw new UnauthorizedError();
 }
@@ -46,6 +47,8 @@ function ensureLoggedIn(req, res, next) {
  */
 
 function ensureIsAdmin(req,res,next){
+  console.log(`CALLED ADMIN`);
+  console.log(`res.locals.user keys: ${Object.entries(res.locals.user)}`);
   if (res.locals.user?.isAdmin) return next();
   throw new UnauthorizedError();
 }

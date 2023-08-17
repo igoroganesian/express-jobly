@@ -3,12 +3,14 @@
 /** Routes for users. */
 
 const jsonschema = require("jsonschema");
-
 const express = require("express");
-const { ensureLoggedIn } = require("../middleware/auth");
+
+const { ensureLoggedIn, ensureIsAdmin } = require("../middleware/auth");
 const { BadRequestError } = require("../expressError");
 const User = require("../models/user");
+
 const { createToken } = require("../helpers/tokens");
+
 const userNewSchema = require("../schemas/userNew.json");
 const userUpdateSchema = require("../schemas/userUpdate.json");
 
@@ -27,21 +29,24 @@ const router = express.Router();
  * Authorization required: login
  **/
 
-router.post("/", ensureLoggedIn, async function (req, res, next) {
-  const validator = jsonschema.validate(
+router.post("/",
+  ensureLoggedIn,
+  ensureIsAdmin,
+  async function (req, res, next) {
+    const validator = jsonschema.validate(
       req.body,
       userNewSchema,
       { required: true },
-  );
-  if (!validator.valid) {
-    const errs = validator.errors.map(e => e.stack);
-    throw new BadRequestError(errs);
-  }
+    );
+    if (!validator.valid) {
+      const errs = validator.errors.map(e => e.stack);
+      throw new BadRequestError(errs);
+    }
 
-  const user = await User.register(req.body);
-  const token = createToken(user);
-  return res.status(201).json({ user, token });
-});
+    const user = await User.register(req.body);
+    const token = createToken(user);
+    return res.status(201).json({ user, token });
+  });
 
 
 /** GET / => { users: [ {username, firstName, lastName, email }, ... ] }
@@ -51,10 +56,13 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  * Authorization required: login
  **/
 
-router.get("/", ensureLoggedIn, async function (req, res, next) {
-  const users = await User.findAll();
-  return res.json({ users });
-});
+router.get("/",
+  ensureLoggedIn,
+  ensureIsAdmin,
+  async function (req, res, next) {
+    const users = await User.findAll();
+    return res.json({ users });
+  });
 
 
 /** GET /[username] => { user }
@@ -82,9 +90,9 @@ router.get("/:username", ensureLoggedIn, async function (req, res, next) {
 
 router.patch("/:username", ensureLoggedIn, async function (req, res, next) {
   const validator = jsonschema.validate(
-      req.body,
-      userUpdateSchema,
-      { required: true },
+    req.body,
+    userUpdateSchema,
+    { required: true },
   );
   if (!validator.valid) {
     const errs = validator.errors.map(e => e.stack);

@@ -145,15 +145,6 @@ describe("findAll", function () {
     ]);
   });
 
-  test("bad request with minEmployees > maxEmployees", async function () {
-    const searchQueries = { minEmployees: 5, maxEmployees: 2 };
-    expect(async () => { await Company.findAll(searchQueries); })
-      .rejects
-      .toThrow(new BadRequestError(
-        "maxEmployees must be greater than minEmployees"
-      ));
-  });
-
   test("works: nameLike filter", async function () {
     const searchQueries = { nameLike: "3" };
     let companies = await Company.findAll(searchQueries);
@@ -198,10 +189,25 @@ describe("findAll", function () {
     ]);
   });
 
+  test("works: returns empty array if no matches", async function () {
+    const searchQueries = { minEmployees: 500 };
+    let companies = await Company.findAll(searchQueries);
+
+    expect(companies).toEqual([]);
+  });
+
+  test("bad request with minEmployees > maxEmployees", async function () {
+    const searchQueries = { minEmployees: 5, maxEmployees: 2 };
+    expect(async () => { await Company.findAll(searchQueries); })
+      .rejects
+      .toThrow(new BadRequestError(
+        "maxEmployees must be greater than minEmployees"
+      ));
+  });
+
 
 });
 
-//TODO: search for no-match; order tests consistently
 
 /************************************** get */
 

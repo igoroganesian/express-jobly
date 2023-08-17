@@ -30,7 +30,7 @@ describe("POST /companies", function () {
     numEmployees: 10,
   };
 
-  test("ok for users", async function () {
+  test("ok for admin users", async function () {
     const resp = await request(app)
       .post("/companies")
       .send(newCompany)
@@ -63,15 +63,15 @@ describe("POST /companies", function () {
     expect(resp.statusCode).toEqual(400);
   });
 
-  // test("non admin user gets unauthorized error", async function(){
-  //   const resp = await request(app)
-  //     .post("/companies")
-  //     .send(newCompany)
-  //     .set("authorization", `Bearer ${adminToken}`);
-  //   expect(resp.statusCode).toEqual(201);
-  //   expect(resp.body).toEqual({
-  //   company: newCompany,
-  // })
+  test("non admin user gets unauthorized error", async function () {
+    const resp = await request(app)
+      .post("/companies")
+      .send(newCompany)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+
 });
 
 /************************************** GET /companies */
@@ -112,38 +112,48 @@ describe("GET /companies", function () {
 
 describe("GET /companies", function () {
   test("Gets filtered results if searchQuery is passed as arg",
-  async function () {
+    async function () {
 
-    const resp = await request(app)
-      .get(`/companies`)
-      .query({ minEmployees: 2, maxEmployees: 2 });
+      const resp = await request(app)
+        .get(`/companies`)
+        .query({ minEmployees: 2, maxEmployees: 2 });
 
-    expect(resp.body).toEqual({
-      companies: [
-        {
-          handle: "c2",
-          name: "C2",
-          description: "Desc2",
-          numEmployees: 2,
-          logoUrl: "http://c2.img",
-        }
-      ]
+      expect(resp.body).toEqual({
+        companies: [
+          {
+            handle: "c2",
+            name: "C2",
+            description: "Desc2",
+            numEmployees: 2,
+            logoUrl: "http://c2.img",
+          }
+        ]
+      });
     });
-  });
+
+    test("Gets filtered results if searchQuery is passed as arg",
+    async function () {
+
+      const resp = await request(app)
+        .get(`/companies`)
+        .query({ nameLike: "500" });
+
+      expect(resp.body).toEqual({
+        companies: []
+      });
+    });
 
   test("throws 400 error if given invalid filter queries",
-  async function () {
+    async function () {
 
-    const resp = await request(app)
-      .get(`/companies`)
-      .query({ favoriteColor: "red" });
+      const resp = await request(app)
+        .get(`/companies`)
+        .query({ favoriteColor: "red" });
 
       expect(resp.statusCode).toEqual(400);
-  });
+    });
 
 });
-
-//TODO: test for no matches
 
 /************************************** GET /companies/:handle */
 
@@ -183,7 +193,7 @@ describe("GET /companies/:handle", function () {
 /************************************** PATCH /companies/:handle */
 
 describe("PATCH /companies/:handle", function () {
-  test("works for users", async function () {
+  test("works for admin users", async function () {
     const resp = await request(app)
       .patch(`/companies/c1`)
       .send({
@@ -239,12 +249,24 @@ describe("PATCH /companies/:handle", function () {
       .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(400);
   });
+
+  test("non admin user gets unauthorized error", async function () {
+    const resp = await request(app)
+      .patch("/companies/c1")
+      .send({
+        name: "C1-new",
+      })
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+
 });
 
 /************************************** DELETE /companies/:handle */
 
 describe("DELETE /companies/:handle", function () {
-  test("works for users", async function () {
+  test("works for admin users", async function () {
     const resp = await request(app)
       .delete(`/companies/c1`)
       .set("authorization", `Bearer ${adminToken}`);
@@ -263,4 +285,12 @@ describe("DELETE /companies/:handle", function () {
       .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(404);
   });
+
+  test("non admin user gets unauthorized error", async function () {
+    const resp = await request(app)
+      .delete("/companies/c1")
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
 });
