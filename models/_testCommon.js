@@ -1,11 +1,11 @@
 "use strict";
 
 const bcrypt = require("bcrypt");
-
+// const Job = require("./job");
 const db = require("../db.js");
 const { BCRYPT_WORK_FACTOR } = require("../config");
 
-let jobIds;
+let jobIds = [];
 
 async function commonBeforeAll() {
   // noinspection SqlWithoutWhere
@@ -34,7 +34,8 @@ async function commonBeforeAll() {
     await bcrypt.hash("password2", BCRYPT_WORK_FACTOR),
   ]);
 
-  jobIds = await db.query(`
+
+  const result = await db.query(`
       INSERT INTO jobs (title,
                         salary,
                         equity,
@@ -44,6 +45,10 @@ async function commonBeforeAll() {
              ('j3', 300, .33, 'c2'),
              ('j4', 400, .44, 'c2')
       RETURNING id`);
+
+  const mappedResult = result.rows.map((row)=> row.id)
+
+  jobIds.splice(0, 0, ...mappedResult);
 }
 
 async function commonBeforeEach() {
@@ -57,6 +62,9 @@ async function commonAfterEach() {
 async function commonAfterAll() {
   await db.end();
 }
+
+//createJobRecords returns ids
+
 
 
 module.exports = {
