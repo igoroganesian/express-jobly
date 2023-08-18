@@ -22,7 +22,7 @@ const router = new express.Router();
  *
  * Returns { handle, name, description, numEmployees, logoUrl }
  *
- * Authorization required: login
+ * Authorization required: logged in as admin
  */
 
 router.post("/",
@@ -104,6 +104,7 @@ router.get("/:handle", async function (req, res, next) {
  * Returns { handle, name, description, numEmployees, logo_url }
  *
  * Authorization required: login
+ * //TODO: docstring
  */
 
 router.patch("/:handle",

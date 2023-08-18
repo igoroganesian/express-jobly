@@ -71,6 +71,7 @@ describe("POST /companies", function () {
     expect(resp.statusCode).toEqual(401);
   });
 
+  //TODO: combo unauth + bad data
 
 });
 

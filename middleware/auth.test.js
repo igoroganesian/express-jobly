@@ -5,7 +5,8 @@ const { UnauthorizedError } = require("../expressError");
 const {
   authenticateJWT,
   ensureLoggedIn,
-  ensureIsAdmin
+  ensureIsAdmin,
+  ensureIsAdminOrSelf
 } = require("./auth");
 
 
@@ -76,6 +77,7 @@ describe("ensureIsAdmin", function () {
     const req = {};
     const res = { locals: { user: { isAdmin: true } } };
     ensureIsAdmin(req, res, next);
+    //TODO: no expectations for success?
   });
 
   test("unauth if not admin", function () {
@@ -84,4 +86,32 @@ describe("ensureIsAdmin", function () {
     expect(() => ensureIsAdmin(req, res, next))
         .toThrow(UnauthorizedError);
   });
+
+  //TODO: test if there is no user on locals
+  //TODO: write a test that fails if we rely on truthiness
 })
+
+
+
+describe("ensureAdminOrSelf", function () {
+  test("works for self", function () {
+
+    const req = {params:{username:"u1"}};
+    const res = { locals: { user: { username:"u1", isAdmin:false } } };
+    ensureIsAdminOrSelf(req, res, next);
+  });
+
+  test("works for admin", function () {
+    const req = {params:{username:"u1"}};
+    const res = { locals: { user: { isAdmin: true, username:"admin" } } };
+    ensureIsAdminOrSelf(req, res, next);
+  });
+
+  test("unauth if not admin or self", function () {
+    const req = {params:{username:"u1"}};
+    const res = { locals: { user: { isAdmin: false, username:"fakeUser" } } };
+    expect(() => ensureIsAdminOrSelf(req, res, next))
+        .toThrow(UnauthorizedError);
+  });
+})
+
