@@ -6,6 +6,15 @@ CREATE TABLE companies (
   logo_url TEXT
 );
 
+CREATE TABLE jobs (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  salary INTEGER CHECK (salary >= 0),
+  equity NUMERIC CHECK (equity <= 1.0),
+  company_handle VARCHAR(25) NOT NULL
+    REFERENCES companies ON DELETE CASCADE
+);
+
 CREATE TABLE users (
   username VARCHAR(25) PRIMARY KEY,
   password TEXT NOT NULL,
@@ -14,15 +23,6 @@ CREATE TABLE users (
   email TEXT NOT NULL
     CHECK (position('@' IN email) > 1),
   is_admin BOOLEAN NOT NULL DEFAULT FALSE
-);
-
-CREATE TABLE jobs (
-  id SERIAL PRIMARY KEY,
-  title TEXT NOT NULL,
-  salary INTEGER CHECK (salary >= 0),
-  equity NUMERIC CHECK (equity <= 1.0),
-  company_handle VARCHAR(25) NOT NULL
-    REFERENCES companies ON DELETE CASCADE
 );
 
 CREATE TABLE applications (
