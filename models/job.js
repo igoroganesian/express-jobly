@@ -15,21 +15,21 @@ class Job {
    * */
 
 
-    static async create({ title, salary, equity, companyHandle }) {
+  static async create({ title, salary, equity, companyHandle }) {
 
-      //make sure companyHandle finds a match
-      const companyHandleCheck = await db.query(`
+    //make sure companyHandle finds a match
+    const companyHandleCheck = await db.query(`
         SELECT handle
         FROM companies
-        WHERE handle =$1`,[companyHandle]);
+        WHERE handle =$1`, [companyHandle]);
 
-      if (!companyHandleCheck.rows[0]){
-        throw new BadRequestError(
-          `No company exists with handle ${companyHandle}`
-        )
-      }
+    if (!companyHandleCheck.rows[0]) {
+      throw new BadRequestError(
+        `No company exists with handle ${companyHandle}`
+      );
+    }
 
-      const result = await db.query(`
+    const result = await db.query(`
                   INSERT INTO jobs (title,
                                     salary,
                                     equity,
@@ -42,22 +42,58 @@ class Job {
                       equity,
                       company_handle AS "companyHandle"
                   `, [
-        title,
-        salary,
-        equity,
-        companyHandle,
-      ],
-      );
-      const job = result.rows[0];
+      title,
+      salary,
+      equity,
+      companyHandle,
+    ],
+    );
+    const job = result.rows[0];
 
-      return job;
-    }
+    return job;
+  }
 
+  /** Find all jobs.
+   *
+   * Returns [{ title, salary, equity, companyHandle }, ...]
+   * */
 
-  //find all
+  static async findAll() {
 
+    let result = await db.query(
+        `SELECT title,
+                salary,
+                equity,
+                company_handle AS "companyHandle"
+         FROM jobs
+         ORDER BY company_handle
+        `);
 
-  //Find by id
+    return result.rows;
+  }
+
+  /** Given a job id, return data about job.
+   *
+   * Returns { title, salary, equity, companyHandle }
+   *
+   * Throws NotFoundError if not found.
+   **/
+
+  static async get(id) {
+    const jobRes = await db.query(`
+        SELECT title,
+               salary,
+               equity,
+               company_handle AS "companyHandle"
+        FROM jobs
+        WHERE id = $1`, [id]);
+
+    const job = jobRes.rows[0];
+
+    if (!job) throw new NotFoundError(`No job: ${id}`);
+
+    return job;
+  }
 
 
   //Update by id
