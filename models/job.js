@@ -2,6 +2,7 @@
 "use strict";
 const db = require("../db");
 const { BadRequestError, NotFoundError } = require("../expressError");
+const { sqlForPartialUpdate, sqlForFindByQuery } = require("../helpers/sql");
 
 
 class Job {
@@ -61,7 +62,7 @@ class Job {
   static async findAll() {
 
     let result = await db.query(
-        `SELECT title,
+      `SELECT title,
                 salary,
                 equity,
                 company_handle AS "companyHandle"
@@ -95,9 +96,48 @@ class Job {
     return job;
   }
 
-
   //Update by id
   //Updating a job should never change the ID of a job, nor the company associated with a job.
+
+  /** Update job data with `data`.
+     *
+     * This is a "partial update" --- it's fine if data doesn't contain all the
+     * fields; this only changes provided ones.
+     *
+     * Data can include: { title, salary, equity }
+     *
+     * Returns { id, title, salary, equity, companyHandle}
+     *
+     * Throws NotFoundError if not found.
+     */
+
+  static async update(id, data) {
+    const { setCols, values } = sqlForPartialUpdate(data, {});
+    const idVarIdx = "$" + (values.length + 1);
+    const companyHandleIdx = "$" + (values.length + 1);
+    id = Number(id);
+
+    const querySql = `
+      UPDATE jobs
+      SET ${setCols}
+      WHERE id = ${idVarIdx}
+      RETURNING
+          id,
+          title,
+          salary,
+          equity,
+          company_handle AS "companyHandle"`;
+    const result = await db.query(querySql, [...values, id]);
+    const job = result.rows[0];
+
+    if (!job) throw new NotFoundError(`No company: ${id}`);
+
+    return job;
+  }
+
+
+
+
 
 
   //DELETE by id
