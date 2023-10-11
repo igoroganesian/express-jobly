@@ -6,7 +6,7 @@ const jsonschema = require("jsonschema");
 const express = require("express");
 
 const { BadRequestError } = require("../expressError");
-const { ensureLoggedIn, ensureIsAdmin } = require("../middleware/auth");
+const { ensureIsAdmin } = require("../middleware/auth");
 const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
@@ -22,13 +22,10 @@ const router = new express.Router();
  *
  * Returns { handle, name, description, numEmployees, logoUrl }
  *
- * Authorization required: logged in as admin
+ * Authorization required:  admin
  */
 
-router.post("/",
-  ensureLoggedIn,
-  ensureIsAdmin,
-  async function (req, res, next) {
+router.post("/", ensureIsAdmin, async function (req, res, next) {
     const validator = jsonschema.validate(
       req.body,
       companyNewSchema,
@@ -55,16 +52,13 @@ router.post("/",
  */
 
 router.get("/", async function (req, res, next) {
-
   const searchQueries = req.query;
 
-  if (searchQueries.minEmployees) (
-    searchQueries.minEmployees =
-    Number(searchQueries.minEmployees)
+  if (searchQueries.minEmployees !== undefined) (
+    searchQueries.minEmployees = Number(searchQueries.minEmployees)
   );
-  if (searchQueries.maxEmployees) (
-    searchQueries.maxEmployees =
-    Number(searchQueries.maxEmployees)
+  if (searchQueries.maxEmployees !== undefined) (
+    searchQueries.maxEmployees = Number(searchQueries.maxEmployees)
   );
 
   const validator = jsonschema.validate(
@@ -103,14 +97,10 @@ router.get("/:handle", async function (req, res, next) {
  *
  * Returns { handle, name, description, numEmployees, logo_url }
  *
- * Authorization required: login
- * //TODO: docstring
+ * Authorization required: admin
  */
 
-router.patch("/:handle",
-  ensureLoggedIn,
-  ensureIsAdmin,
-  async function (req, res, next) {
+router.patch("/:handle", ensureIsAdmin, async function (req, res, next) {
     const validator = jsonschema.validate(
       req.body,
       companyUpdateSchema,
@@ -127,13 +117,10 @@ router.patch("/:handle",
 
 /** DELETE /[handle]  =>  { deleted: handle }
  *
- * Authorization: login
+ * Authorization: admin
  */
 
-router.delete("/:handle",
-  ensureLoggedIn,
-  ensureIsAdmin,
-  async function (req, res, next) {
+router.delete("/:handle", ensureIsAdmin, async function (req, res, next) {
     await Company.remove(req.params.handle);
     return res.json({ deleted: req.params.handle });
   });

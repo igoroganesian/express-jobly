@@ -2,7 +2,6 @@
 
 const request = require("supertest");
 
-const db = require("../db");
 const app = require("../app");
 
 const {
@@ -30,7 +29,7 @@ describe("POST /companies", function () {
     numEmployees: 10,
   };
 
-  test("ok for admin users", async function () {
+  test("ok for admin", async function () {
     const resp = await request(app)
       .post("/companies")
       .send(newCompany)
@@ -39,6 +38,14 @@ describe("POST /companies", function () {
     expect(resp.body).toEqual({
       company: newCompany,
     });
+  });
+
+  test("unauthorized for non-admin", async function () {
+    const resp = await request(app)
+      .post("/companies")
+      .send(newCompany)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(401);
   });
 
   test("bad request with missing data", async function () {
@@ -52,7 +59,7 @@ describe("POST /companies", function () {
     expect(resp.statusCode).toEqual(400);
   });
 
-  test("bad request with invalid data", async function () {
+  test("bad request with invalid data (admin)", async function () {
     const resp = await request(app)
       .post("/companies")
       .send({
@@ -63,22 +70,32 @@ describe("POST /companies", function () {
     expect(resp.statusCode).toEqual(400);
   });
 
-  test("non admin user gets unauthorized error", async function () {
+  test("unauthorized with invalid data (non-admin)", async function () {
     const resp = await request(app)
-      .post("/companies")
-      .send(newCompany)
-      .set("authorization", `Bearer ${u1Token}`);
+        .post("/companies")
+        .send({
+          ...newCompany,
+          logoUrl: "notUrl",
+        })
+        .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(401);
   });
 
-  //TODO: combo unauth + bad data
-
+  test("unauthorized with invalid data (guest)", async function () {
+    const resp = await request(app)
+        .post("/companies")
+        .send({
+          ...newCompany,
+          logoUrl: "notUrl",
+        });
+    expect(resp.statusCode).toEqual(401);
+  });
 });
 
 /************************************** GET /companies */
 
 describe("GET /companies", function () {
-  test("ok for anon", async function () {
+  test("ok for guest", async function () {
     const resp = await request(app).get("/companies");
     expect(resp.body).toEqual({
       companies:
@@ -112,13 +129,10 @@ describe("GET /companies", function () {
 /************************************** GET /companies (with filter) */
 
 describe("GET /companies", function () {
-  test("Gets filtered results if searchQuery is passed as arg",
-    async function () {
-
+  test("filtering: works", async function () {
       const resp = await request(app)
         .get(`/companies`)
         .query({ minEmployees: 2, maxEmployees: 2 });
-
       expect(resp.body).toEqual({
         companies: [
           {
@@ -132,34 +146,27 @@ describe("GET /companies", function () {
       });
     });
 
-    test("Gets filtered results if searchQuery is passed as arg",
-    async function () {
-
+    test("nameLike filter: works", async function () {
       const resp = await request(app)
         .get(`/companies`)
         .query({ nameLike: "500" });
-
       expect(resp.body).toEqual({
         companies: []
       });
     });
 
-  test("throws 400 error if given invalid filter queries",
-    async function () {
-
+  test("invalid filter key: bad request", async function () {
       const resp = await request(app)
         .get(`/companies`)
         .query({ favoriteColor: "red" });
-
       expect(resp.statusCode).toEqual(400);
     });
-
 });
 
 /************************************** GET /companies/:handle */
 
 describe("GET /companies/:handle", function () {
-  test("works for anon", async function () {
+  test("works for guest", async function () {
     const resp = await request(app).get(`/companies/c1`);
     expect(resp.body).toEqual({
       company: {
@@ -172,7 +179,7 @@ describe("GET /companies/:handle", function () {
     });
   });
 
-  test("works for anon: company w/o jobs", async function () {
+  test("works for guest: company w/o jobs", async function () {
     const resp = await request(app).get(`/companies/c2`);
     expect(resp.body).toEqual({
       company: {
@@ -212,7 +219,7 @@ describe("PATCH /companies/:handle", function () {
     });
   });
 
-  test("unauth for anon", async function () {
+  test("unauth for non-admin", async function () {
     const resp = await request(app)
       .patch(`/companies/c1`)
       .send({
