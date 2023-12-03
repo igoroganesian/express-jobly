@@ -4,13 +4,14 @@ const db = require("../db");
 const { BadRequestError, NotFoundError } = require("../expressError");
 const { sqlForPartialUpdate, sqlForFindByQuery } = require("../helpers/sql");
 
+/** Related functions for jobs. */
 
 class Job {
   /** Create a job (from data), update db, return new job data.
    *
-   * data should be { title, salary, equity } ??
+   * data should be { title, salary, equity, companyHandle }
    *
-   * Returns { id, title, salary, equity, company_handle } ??
+   * Returns { id, title, salary, equity, companyHandle }
    *
    * Throws BadRequestError if job already in database.
    * */
@@ -22,9 +23,11 @@ class Job {
     const companyHandleCheck = await db.query(`
         SELECT handle
         FROM companies
-        WHERE handle =$1`, [companyHandle]);
+        WHERE handle =$1`,
+      [companyHandle]);
+    const company = companyHandleCheck.rows[0];
 
-    if (!companyHandleCheck.rows[0]) {
+    if (!company) {
       throw new BadRequestError(
         `No company exists with handle ${companyHandle}`
       );
