@@ -14,10 +14,11 @@ const jobSearchSchema = require("../schemas/jobSearch.json");
 
 const router = express.Router({ mergeParams: true });
 
-
 /** POST / { job } => { job }
  *
- * job should be { title, salary, equity, companyHandle }
+ * Creates a new job.
+ *
+ * Accepts { title, salary, equity, companyHandle }
  *
  * Returns { id, title, salary, equity, companyHandle }
  *

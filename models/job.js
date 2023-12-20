@@ -9,7 +9,7 @@ const { sqlForPartialUpdate, sqlForFindByQuery } = require("../helpers/sql");
 class Job {
   /** Create a job (from data), update db, return new job data.
    *
-   * data should be { title, salary, equity, companyHandle }
+   * Accepts { title, salary, equity, companyHandle }
    *
    * Returns { id, title, salary, equity, companyHandle }
    *
@@ -99,13 +99,7 @@ class Job {
     return job;
   }
 
-  //Update by id
-  //Updating a job should never change the ID of a job, nor the company associated with a job.
-
-  /** Update job data with `data`.
-     *
-     * This is a "partial update" --- it's fine if data doesn't contain all the
-     * fields; this only changes provided ones.
+  /** Update job data with `data` (partial).
      *
      * Data can include: { title, salary, equity }
      *
@@ -138,22 +132,21 @@ class Job {
     return job;
   }
 
+  /** Delete given job from database; returns undefined.
+   *
+   * Throws NotFoundError if company not found.
+   **/
 
+  static async remove(id) {
+    const result = await db.query(
+        `DELETE
+         FROM jobs
+         WHERE id = $1
+         RETURNING id`, [id]);
+    const job = result.rows[0];
 
-
-
-
-  //DELETE by id
+    if (!job) throw new NotFoundError(`No job: ${id}`);
+  }
 }
 
 module.exports = Job;
-
-//*********SCHEMA FOR REFERENCE****
-// CREATE TABLE jobs (
-//   id SERIAL PRIMARY KEY***,
-//   title TEXT NOT NULL,
-//   salary INTEGER CHECK (salary >= 0),
-//   equity NUMERIC CHECK (equity <= 1.0),
-//   company_handle VARCHAR(25) NOT NULL
-//     REFERENCES companies ON DELETE CASCADE***
-// );

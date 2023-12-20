@@ -81,9 +81,9 @@ router.get("/:username",
   ensureLoggedIn,
   ensureIsAdminOrSelf,
   async function (req, res, next) {
-  const user = await User.get(req.params.username);
-  return res.json({ user });
-});
+    const user = await User.get(req.params.username);
+    return res.json({ user });
+  });
 
 
 /** PATCH /[username] { user } => { user }
@@ -112,7 +112,7 @@ router.patch("/:username",
 
     const user = await User.update(req.params.username, req.body);
     return res.json({ user });
-});
+  });
 
 
 /** DELETE /[username]  =>  { deleted: username }
@@ -126,7 +126,22 @@ router.delete("/:username",
   async function (req, res, next) {
     await User.remove(req.params.username);
     return res.json({ deleted: req.params.username });
-});
+  });
+
+/** POST /[username]/jobs/[id]  { state } => { application }
+ *
+ * Returns {"applied": jobId}
+ *
+ * Authorization required: admin or same-user-as-:username
+ * */
+
+router.post("/:username/jobs/:id",
+  ensureCorrectUserOrAdmin,
+  async function (req, res, next) {
+    const jobId = +req.params.id;
+    await User.applyToJob(req.params.username, jobId);
+    return res.json({ applied: jobId });
+  });
 
 
 module.exports = router;
